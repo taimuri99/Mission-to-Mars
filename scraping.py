@@ -13,7 +13,7 @@ def scrape_all():
 
     # using mars_news function
     news_title, news_paragraph = mars_news(browser)
-
+    hemisphere_image_urls = hemisphere_images(browser)
     # Run all scraping functions and store results in dictionary
     # create the HTML template, we'll create paths to the dictionary's values, which lets us present our data on our template
     data = {
@@ -21,7 +21,8 @@ def scrape_all():
         "news_paragraph": news_paragraph,
         "featured_image": featured_image(browser),
         "facts": mars_facts(),
-        "last_modified": dt.datetime.now()
+        "last_modified": dt.datetime.now(),
+        "hemispheres": hemisphere_image_urls
     }
 
     # Stop webdriver and return data
@@ -111,6 +112,41 @@ def mars_facts():
     df.set_index('description', inplace=True)
     # Convert dataframe into HTML format, add bootstrap
     return df.to_html()
+
+def hemisphere_images(browser):
+    # # D1: Scrape High-Resolution Mars’ Hemisphere Images and Titles
+
+    # ### Hemispheres
+
+    # 1. Use browser to visit the URL 
+    url = 'https://marshemispheres.com/'
+
+    browser.visit(url)
+
+    # 2. Create a list to hold the images and titles.
+    hemisphere_image_urls = []
+
+    # 3. Write code to retrieve the image urls and titles for each hemisphere.
+
+    for n in range(4,12,2):
+        hemispheres = {}
+        browser.find_by_css('a[href]')[n].click()
+        html = browser.html
+        img_soup = soup(html, 'html.parser')
+        title = img_soup.find('h2', class_='title').get_text()
+        partial_link = img_soup.find_all('a', target= '_blank')[2].get('href')
+        img_url = f'https:/marshemispheres.com/{partial_link}'
+        
+        hemispheres['img_url'] = img_url
+        hemispheres['title'] = title
+        
+        hemisphere_image_urls.append(hemispheres)
+        browser.back()
+        
+
+    # 4. Print the list that holds the dictionary of each image url and title.
+    return hemisphere_image_urls
+
 
 if __name__ == "__main__":
     # If running as script, print scraped data
